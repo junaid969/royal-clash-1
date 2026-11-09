@@ -1,0 +1,18 @@
+# OS / editor
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Backups
+*.bak
+*-backup.html
+*-mojibake-backup.html
+
+# Node (if tooling is added later)
+node_modules/

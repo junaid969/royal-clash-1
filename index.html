@@ -522,7 +522,7 @@ const zone=new T.Mesh(new T.PlaneGeometry(20,15),new T.MeshBasicMaterial({map:zo
 zone.rotation.x=-Math.PI/2;zone.position.set(0,.05,9.5);zone.visible=false;S.add(zone);
 
 const U=[],B=[],PJ=[],PS=[],RINGS=[];
-let E=[5,5],t=180,over=false,sel=-1,bt=3,placed=false,dbl=false,ot=false,paused=false,muted=false;
+let E=[5,5],t=180,over=false,sel=-1,bt=3,placed=false,dbl=false,ot=false,paused=false,muted=false,DEP=0;
 
 function shock(x,z,r,col){const m=new T.Mesh(new T.TorusGeometry(1,.05,6,28),new T.MeshBasicMaterial({color:col,transparent:true,opacity:.8,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(x,.16,z);m.scale.setScalar(.2);S.add(m);RINGS.push({m,life:.55,max:.55,r:r*1.1})}
 function bar(parent,y,w,s){const g=new T.Group();g.position.y=y;parent.add(g);const bg=new T.Mesh(new T.PlaneGeometry(w,.24),new T.MeshBasicMaterial({color:0x0b1020,transparent:true,opacity:.78,depthTest:false}));bg.renderOrder=9;g.add(bg);const fw=w-.08;const fg=new T.Mesh(new T.PlaneGeometry(fw,.14),new T.MeshBasicMaterial({color:s>0?0x60a5fa:0xf87171,depthTest:false}));fg.renderOrder=10;g.add(fg);return {g,fg,fw}}
@@ -573,7 +573,7 @@ function char(i,s){
  m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
  return {m,lL,lR,aL,aR};
 }function freeze(x,z,r,s,lv){for(const o of U.concat(B))if(o.s!==s&&o.hp>0&&Math.hypot(o.g.position.x-x,o.g.position.z-z)<r+(o.r||0))o.fz=4+((lv||1)-1)*.5;part(V(x,.5,z),0xbfe9ff,40,9,.9,.35);part(V(x,.5,z),0xffffff,15,6,.6,.25);shock(x,z,r,0xbfe9ff);shake=Math.max(shake,.15);snd(900,.4,'triangle',.06)}
-function spawn(s,i,x,z,lv){let d=CARDS[i];E[s>0?0:1]-=d.c;if(lv>1){const f=1+.12*(lv-1);d={...d,hp:(d.hp||0)*f,dm:(d.dm||0)*f}}
+function spawn(s,i,x,z,lv){let d=CARDS[i];E[s>0?0:1]-=d.c;if(s>0)DEP++;if(lv>1){const f=1+.12*(lv-1);d={...d,hp:(d.hp||0)*f,dm:(d.dm||0)*f}}
  if(d.fr){freeze(x,z,d.sr,s,lv);return}
  if(d.sl){fire(V(x,28,z-8),{g:{position:V(x,0,z)},hp:1e9,r:0,s:-s},d,s);return}
  if(s>0)snd(400,.15,'square',.04);
@@ -622,7 +622,16 @@ function fire(p,tg,d,s){const k=d.pj;let m;
  else if(k==3)m=A(S,GS,new T.MeshBasicMaterial({color:0xfb923c}),0,0,0,.95,.95,.95);
  else m=A(S,GS,new T.MeshBasicMaterial({color:0x60a5fa}),0,0,0,.2,.2,.2);
  m.position.copy(p);PJ.push({m,tg,d,s,sp:PSP[k]||18,col:PCOL[k]||0xffffff,pj:k});if(k==1)snd(700,.08,'triangle',.03)}
-function end(w){if(over)return;over=true;if(mode=='host'&&net)net.send({k:'end',w});const gg=w===1?80:w===.5?40:25;GOLD+=gg;sv();$('eg').textContent='+'+gg+' 🪙 coins';if(w==1)for(let k=0;k<10;k++)part(V((Math.random()-.5)*16,4+Math.random()*6,(Math.random()-.5)*16),[0xfacc15,0xf0abfc,0x60a5fa,0x34d399][k%4],26,11,1.8,.3);$('et').textContent=w===.5?'🤝 Draw':w?'🏆 Victory!':'💀 Defeat';$('end').style.display='flex';[600,800,1000].forEach((f,i)=>setTimeout(()=>snd(w?f:f/3,.4,'triangle',.08),i*180))}
+function end(w){if(over)return;over=true;if(mode=='host'&&net)net.send({k:'end',w});const gg=w===1?80:w===.5?40:25;GOLD+=gg;
+ const td=w===1?30:w===.5?10:-18;TROPHY=Math.max(0,TROPHY+td);
+ if(w===1)WINS++;else if(w===.5)DRAWS++;else LOSSES++;
+ sv();updateProfile();
+ $('eg').textContent='+'+gg+' 🪙 coins';
+ const tdEl=$('trDelta');tdEl.textContent=(td>=0?'+':'')+td;tdEl.classList.toggle('down',td<0);
+ $('trTotal').textContent=TROPHY+' 🏆';
+ $('endStats').innerHTML='<span>🏰 '+(B.filter(b=>b.s<0&&b.dead).length)+' enemy towers</span><span>🛡️ '+(B.filter(b=>b.s>0&&b.dead).length)+' lost</span><span>🃏 '+DEP+' deployed</span>';
+ if(w==1)for(let k=0;k<10;k++)part(V((Math.random()-.5)*16,4+Math.random()*6,(Math.random()-.5)*16),[0xfacc15,0xf0abfc,0x60a5fa,0x34d399][k%4],26,11,1.8,.3);
+ $('et').textContent=w===.5?'🤝 Draw':w?'🏆 Victory!':'💀 Defeat';$('end').style.display='flex';[600,800,1000].forEach((f,i)=>setTimeout(()=>snd(w?f:f/3,.4,'triangle',.08),i*180))}
 
 function step(dt){
  t-=dt;if(t<60&&!dbl){dbl=true;const b=$('bn');b.textContent='DOUBLE ELIXIR!';b.style.opacity=1;setTimeout(()=>b.style.opacity=0,2500);snd(500,.4,'sawtooth',.06)}
@@ -677,11 +686,23 @@ paint();
 
 const SV=(()=>{try{return JSON.parse(localStorage.tcsv)||{}}catch(e){return{}}})();
 let LV=Array.isArray(SV.lv)?SV.lv.slice():CARDS.map(()=>1);while(LV.length<CARDS.length)LV.push(1);let GOLD=SV.g??200;
-const sv=()=>{try{localStorage.tcsv=JSON.stringify({lv:LV,g:GOLD})}catch(e){}};
+let TROPHY=Math.max(0,SV.tr|0),WINS=SV.w|0,DRAWS=SV.d|0,LOSSES=SV.l|0;
+const sv=()=>{try{localStorage.tcsv=JSON.stringify({lv:LV,g:GOLD,tr:TROPHY,w:WINS,d:DRAWS,l:LOSSES})}catch(e){}};
+
+const RANKS=[[0,'Arena 1 · Training Camp'],[200,'Arena 2 · Bone Pit'],[500,'Arena 3 · Barbarian Bowl'],[900,'Arena 4 · P.E.K.K.A Playhouse'],[1400,'Arena 5 · Spell Valley'],[2000,'Arena 6 · Builder Workshop'],[2700,'Arena 7 · Royal Arena'],[3500,'Arena 8 · Legendary Arena']];
+function rankInfo(tr){let i=0;for(let k=0;k<RANKS.length;k++)if(tr>=RANKS[k][0])i=k;const lo=RANKS[i][0],hi=RANKS[i+1]?RANKS[i+1][0]:null;return{name:RANKS[i][1],pct:hi?Math.round(Math.min(1,(tr-lo)/(hi-lo))*100):100,next:hi}}
+function updateProfile(){
+ $('trophyTxt').textContent=TROPHY;
+ const r=rankInfo(TROPHY);
+ $('rankTxt').textContent=r.name;
+ $('rankBar').style.width=r.pct+'%';
+ $('statW').textContent=WINS;$('statD').textContent=DRAWS;$('statL').textContent=LOSSES;
+ $('gold').textContent=$('gold2').textContent='🪙 '+GOLD;
+}
 function rc2(){$('gold').textContent=$('gold2').textContent='🪙 '+GOLD;$('grid').innerHTML=CARDS.map((d,i)=>{const l=LV[i],f=1+.12*(l-1),c=80*l;return '<div class="cc"><b>'+d.c+'</b><i>'+d.e+'</i>'+d.n+'<small>Lv '+l+(d.fr?' · stun '+(4+(l-1)*.5)+'s':(d.hp?' · ❤ '+Math.round(d.hp*f):'')+' · ⚔ '+Math.round(d.dm*f))+'</small><button '+(l>=5?'disabled>MAX':GOLD<c?'disabled>⬆ '+c+' 🪙':'onclick="up('+i+')">⬆ '+c+' 🪙')+'</button></div>'}).join('')}
 function up(i){const c=80*LV[i];if(GOLD>=c&&LV[i]<5){GOLD-=c;LV[i]++;sv();rc2();snd(700,.2,'triangle',.06)}}
 function coll(x){$('coll').style.display=x?'flex':'none';rc2()}
-rc2();
+rc2();updateProfile();
 
 function go(m){mode=m;on=true;ft=1.2;$('intro').style.display='none';document.body.classList.remove('menu');AL=Math.max(1,Math.round(LV.reduce((a,b)=>a+b)/LV.length));if(m=='guest'){zone.position.z=-9.5;fit()}snd(500,.3,'triangle',.06)}
 const ld=()=>typeof Peer!='undefined'||($('msg').textContent='Online needs internet (PeerJS did not load).',0),PF='towerclash-';
@@ -697,7 +718,7 @@ function onData(m){if(m.k=='p'){const d=CARDS[m.i];if(mode=='host'&&!over&&d&&E[
  else if(m.k=='s'&&mode=='guest'){t=m.t;E=[m.E[1],m.E[0]];dbl=!!m.d;ot=!!m.o;const ids={};m.U.forEach(a=>{ids[a[0]]=1;let u=UM[a[0]];if(!u){u=UM[a[0]]=mu(a[2],a[1],a[3],a[4]);u.id=a[0]}u.g.position.set(a[3],0,a[4]);u.hp=a[5];u.mv=a[6];u.m.rotation.y=a[7];u.max=a[8];u.y=a[9]});
   for(let i=U.length-1;i>=0;i--)if(!ids[U[i].id]){S.remove(U[i].g);delete UM[U[i].id];U.splice(i,1)}
   m.B.forEach((h,i)=>{const b=B[i];b.hp=h;if(h<=0&&!b.dead){b.dead=true;b.g.scale.y=.25;b.b.visible=b.cn.visible=b.fg.visible=false;if(b.glow)b.glow.visible=false;if(b.terr)b.terr.visible=false;part(V(b.g.position.x,2,b.g.position.z),0xfb923c,30,9,1,.5);shake=1;snd(70,.8,'sawtooth',.1)}})}
- else if(m.k=='x')boom(m.x,m.z,m.r,0,0,m.c);else if(m.k=='end')end(m.w===.5?.5:1-m.w)}
+ else if(m.k=='x')boom(m.x,m.z,m.r,0,0,m.c);else if(m.k=='c')chatIncoming(String(m.m).slice(0,80));else if(m.k=='end')end(m.w===.5?.5:1-m.w)}
 const pv=new T.Vector3();function pop(p,tx,c){if(document.querySelectorAll('.pop').length>30)return;const e=document.createElement('div');e.className='pop';e.textContent=tx;pv.set(p.x,2.5,p.z).project(C);e.style.cssText='left:'+(pv.x*.5+.5)*innerWidth+'px;top:'+(-pv.y*.5+.5)*innerHeight+'px;color:'+c;document.body.appendChild(e);setTimeout(()=>e.remove(),700)}
 function dmg(o){if(o.lh===undefined)o.lh=o.hp;if(on&&o.hp<o.lh-5)pop(o.g.position,Math.round(o.lh-o.hp),o.s>0?'#93c5fd':'#fca5a5');o.lh=o.hp}
 
@@ -707,6 +728,18 @@ $('helpbtn').onclick=()=>help(1);
 $('pausebtn').onclick=()=>togglePause();
 function help(x){$('help').style.display=x?'flex':'none';if(x&&on&&!over){paused=true;$('pause').style.display='none';$('pausebtn').textContent='▶'}else if(!x&&on&&!over){paused=false;$('pausebtn').textContent='⏸'}}
 function togglePause(){if(!on||over)return;paused=!paused;$('pause').style.display=paused?'flex':'none';$('pausebtn').textContent=paused?'▶':'⏸';$('help').style.display='none'}
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function chatMsg(txt,cls,who){const l=$('chatLog'),e=document.createElement('div');e.className='cmsg '+(cls||'');e.innerHTML=(who?'<b>'+esc(who)+'</b>':'')+esc(txt);l.appendChild(e);l.scrollTop=l.scrollHeight;while(l.children.length>60)l.removeChild(l.firstChild)}
+function chatOpen(x){$('chat').classList.toggle('open',x);if(x){$('chatDot').hidden=true;setTimeout(()=>$('chatIn').focus(),50)}}
+function chatOut(v){v=String(v).slice(0,80);if(!v)return;chatMsg(v,'me','You');if(net&&net.open)net.send({k:'c',m:v});else if(!$('chatLog').querySelector('.cmsg.sys'))chatMsg('Chat is only available in online battles.','sys')}
+function chatSend(){const i=$('chatIn'),v=i.value.trim();i.value='';chatOut(v)}
+function chatIncoming(v){chatMsg(v,'rival','Rival');if(!$('chat').classList.contains('open'))$('chatDot').hidden=false}
+$('chatBtn').onclick=()=>chatOpen(!$('chat').classList.contains('open'));
+$('chatClose').onclick=()=>chatOpen(false);
+$('chatSend').onclick=chatSend;
+$('chatIn').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();chatSend()}};
+document.querySelectorAll('.emojiBar button').forEach(b=>b.onclick=()=>chatOut(b.dataset.e));
 
 let last=performance.now(),clk=0;
 function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000);last=n;clk+=dt;
@@ -736,6 +769,13 @@ function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000
  if(zone.visible)zone.material.opacity=.55+Math.sin(clk*4)*.2;
  R.render(S,C)}
 requestAnimationFrame(loop);
+
+let lp=0,lpTimer=setInterval(()=>{
+ lp=Math.min(100,lp+6+Math.random()*10);$('lbar').style.width=Math.round(lp)+'%';
+ if(lp>=100){clearInterval(lpTimer);$('ltxt').textContent='Arena ready';const b=$('enterBtn');b.disabled=false;b.textContent='ENTER ARENA'}
+},100);
+setTimeout(()=>{const b=$('enterBtn');if(b.disabled){clearInterval(lpTimer);$('lbar').style.width='100%';$('ltxt').textContent='Arena ready';b.disabled=false;b.textContent='ENTER ARENA'}},7000);
+$('enterBtn').onclick=()=>{$('loading').classList.add('done');snd(620,.22,'triangle',.06);};
 </script>
 </body>
 </html>
