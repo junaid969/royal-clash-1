@@ -286,6 +286,46 @@ body.menu #chatBtn,body.menu #chat{display:none!important}
 
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+/* ---------- PRO CARD ART ---------- */
+#cards .card,#cards .nx,.cc{--rc:#94a3b8;--rglow:rgba(148,163,184,.30)}
+#cards .r-rare,.cc.r-rare{--rc:#60a5fa;--rglow:rgba(96,165,250,.34)}
+#cards .r-epic,.cc.r-epic{--rc:#c084fc;--rglow:rgba(192,132,252,.36)}
+#cards .r-legend,.cc.r-legend{--rc:#fbbf24;--rglow:rgba(251,191,36,.36)}
+#cards .card{background:linear-gradient(168deg,rgba(30,41,59,.98),rgba(8,14,28,1))!important;
+  border:1px solid var(--rc)!important;border-radius:16px!important;padding:6px 4px 5px!important;
+  box-shadow:0 9px 20px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08)!important}
+.card .artWrap,.cc .artWrap{position:relative;display:flex;align-items:flex-end;justify-content:center;
+  border-radius:11px;overflow:hidden;
+  background:radial-gradient(130% 105% at 50% 0,var(--rglow),transparent 66%),linear-gradient(180deg,rgba(255,255,255,.05),rgba(2,6,23,.22))}
+.card .artWrap{height:78px;margin:2px 0 5px}
+.cc .artWrap{height:96px;margin:6px 0 7px;border-radius:13px}
+.card .art,.cc .art{width:100%;height:100%;object-fit:contain;filter:saturate(1.35) contrast(1.04) drop-shadow(0 4px 6px rgba(0,0,0,.55))}
+.card .art{transform:scale(1.22) translateY(6px)}
+.cc .art{transform:scale(1.06) translateY(2px)}
+.artE{font-size:42px;line-height:1;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+#cards .card .artE{font-size:30px}
+.card .artWrap::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,transparent 50%,rgba(8,14,28,.45) 78%,rgba(8,14,28,.86))}
+.card b,.cc .gem{position:absolute;z-index:3;border-radius:50%;text-align:center;color:#fff;
+  background:radial-gradient(circle at 34% 26%,rgba(255,255,255,.7),transparent 48%),linear-gradient(180deg,#c084fc,#7c3aed);
+  border:1px solid rgba(255,255,255,.65);box-shadow:0 2px 6px rgba(0,0,0,.7);font-weight:900}
+.card b{top:3px;left:3px;width:21px;height:21px;line-height:20px;font-size:12px}
+.cc .gem{top:6px;left:6px;width:24px;height:24px;line-height:23px;font-size:13px}
+.card.sel{border-color:#facc15!important;box-shadow:0 0 0 2px rgba(250,204,21,.9),0 0 26px rgba(250,204,21,.6)!important;transform:translateY(-10px) scale(1.05)!important}
+#cards .nx{opacity:.94;border-style:dashed!important}
+#cards .nx .artWrap{height:58px;margin:1px 0 2px}
+#cards .nx .art{transform:scale(1.05)}
+.cc{position:relative;overflow:hidden;padding:12px 10px 11px!important;border-radius:20px!important;
+  background:linear-gradient(168deg,rgba(30,41,59,.98),rgba(8,14,28,1))!important;
+  border:1px solid var(--rc)!important;box-shadow:0 14px 30px rgba(0,0,0,.45)!important}
+.cc::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(130% 90% at 50% 0,var(--rglow),transparent 62%);opacity:.8}
+.cc .cname{position:relative;font:800 14.5px 'Inter',sans-serif;letter-spacing:.2px}
+.cc .rar{position:relative;font:800 9px 'Inter',sans-serif;letter-spacing:1.9px;text-transform:uppercase;color:var(--rc);margin:2px 0 5px}
+.cc small{position:relative}
+.cc button{position:relative;margin-top:2px}
+#cards{max-width:820px;margin-left:auto!important;margin-right:auto!important;gap:9px!important}
+
 @media(max-width:420px){#chat{bottom:calc(146px + env(safe-area-inset-bottom,0px));width:calc(100vw - 20px)}
   .profile{padding:8px 10px}.pname{font-size:12.5px}.rank{font-size:10px}}
 </style>
@@ -676,11 +716,51 @@ R.domElement.addEventListener('pointerdown',e=>{
  const ci=hand[sel],lv=LV[ci];if(mode=='guest')net.send({k:'p',i:ci,x:pt.x,z:pt.z,lv});else spawn(1,ci,pt.x,pt.z,lv);
  cycle(sel);sel=-1;zone.visible=false;if(!placed){placed=true;$('hint').style.display='none'}});
 
+const ART={};
+(function buildArt(){
+ try{
+  const r2=new T.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});
+  r2.setPixelRatio(2);r2.setSize(340,340);
+  r2.outputEncoding=T.sRGBEncoding;r2.toneMapping=T.NoToneMapping;r2.toneMappingExposure=1;
+  const s2=new T.Scene();
+  s2.add(new T.HemisphereLight(0xeaf4ff,0x1b2b40,.5));
+  const key=new T.DirectionalLight(0xfff1d0,.95);key.position.set(3.5,6,5);s2.add(key);
+  const rim=new T.DirectionalLight(0x8b5cf6,.32);rim.position.set(-4,3.5,-3.5);s2.add(rim);
+  const rim2=new T.DirectionalLight(0x60a5fa,.3);rim2.position.set(-3.5,2.4,4.5);s2.add(rim2);
+  const cam=new T.PerspectiveCamera(40,1,.1,80);cam.position.set(1.35,2.05,3.4);cam.lookAt(0,1.13,0);
+  const shTex=radialTex('rgba(0,0,0,0.5)'),shGeo=new T.PlaneGeometry(1.8,1.15);
+  const snap=()=>{r2.render(s2,cam);return r2.domElement.toDataURL('image/png')};
+  for(let i=0;i<8;i++){
+   const ch=char(i,1),sh=new T.Mesh(shGeo,new T.MeshBasicMaterial({map:shTex,transparent:true,depthWrite:false}));
+   sh.rotation.x=-Math.PI/2;sh.position.set(0,.015,0);
+   ch.m.rotation.y=.45;s2.add(ch.m);s2.add(sh);
+   ART[CARDS.findIndex(d=>d.i===i)]=snap();
+   s2.remove(sh);s2.remove(ch.m);
+  }
+  function orb(kind){
+   const g=new T.Group();
+   if(kind==='fire'){
+    g.add(new T.Mesh(new T.SphereGeometry(.8,28,20),new T.MeshStandardMaterial({color:0xff7a1a,emissive:0xff3d00,emissiveIntensity:.9,roughness:.35,metalness:.1})));
+    for(let k=0;k<10;k++){const a=k/10*6.283,f=new T.Mesh(new T.ConeGeometry(.44,1.2,7),new T.MeshStandardMaterial({color:0xff6a00,emissive:0xff4d00,emissiveIntensity:.75,roughness:.4,transparent:true,opacity:.9}));f.position.set(Math.cos(a)*.9,Math.sin(a)*.9,0);f.rotation.z=-a-Math.PI/2;g.add(f)}
+   }else{
+    g.add(new T.Mesh(new T.IcosahedronGeometry(.8,0),new T.MeshStandardMaterial({color:0x7cc8ff,emissive:0x2563eb,emissiveIntensity:.55,metalness:.25,roughness:.12,transparent:true,opacity:.94,flatShading:true})));
+    for(let k=0;k<12;k++){const a=k/12*6.283,sp=new T.Mesh(new T.ConeGeometry(.11,.55,5),new T.MeshStandardMaterial({color:0xbfe9ff,emissive:0x3b82f6,emissiveIntensity:.45,roughness:.25}));sp.position.set(Math.cos(a)*1.02,Math.sin(a)*1.02,0);sp.rotation.z=-a-Math.PI/2;g.add(sp)}
+    const ring=new T.Mesh(new T.TorusGeometry(1.02,.04,6,40),new T.MeshStandardMaterial({color:0x9fd8ff,emissive:0x3b82f6,emissiveIntensity:.6,roughness:.2}));ring.rotation.x=1.1;ring.rotation.y=.5;g.add(ring);
+   }
+   g.position.y=1.15;g.rotation.y=.4;g.scale.setScalar(1.3);return g;
+  }
+  [['fire',5],['ice',7]].forEach(([kind,ci])=>{const g=orb(kind);s2.add(g);ART[ci]=snap();s2.remove(g)});
+  r2.dispose();if(r2.forceContextLoss)r2.forceContextLoss();
+ }catch(e){console.warn('card art failed',e)}
+})();
+const ratt=ci=>{const c=CARDS[ci].c;return c>=5?'legend':c>=4?'epic':c>=3?'rare':'common'};
+const artImg=ci=>ART[ci]?'<div class="artWrap"><img class="art" alt="" src="'+ART[ci]+'"></div>':'<div class="artWrap"><span class="artE">'+CARDS[ci].e+'</span></div>';
+
 let dk=[...Array(CARDS.length).keys()].sort(()=>Math.random()-.5);const hand=dk.splice(0,4);
 const mk=c=>{const e=document.createElement('div');e.className=c;$('cards').appendChild(e);return e};
 const cardEls=hand.map((_,k)=>{const e=mk('card');e.onclick=()=>{if(sel===k){sel=-1;zone.visible=false}else{sel=k;zone.visible=!CARDS[hand[k]].sl}snd(300,.05,'square',.03)};return e});
 const nx=mk('card nx');
-function paint(){cardEls.forEach((e,k)=>{const d=CARDS[hand[k]];e.innerHTML='<b>'+d.c+'</b><i>'+d.e+'</i><span>'+d.n+'</span><small>'+d.t+'</small>'});const n=CARDS[dk[0]];nx.innerHTML='<span class="nt">Next</span><i>'+n.e+'</i><span class="nc">'+n.c+'⚡</span>'}
+function paint(){cardEls.forEach((e,k)=>{const ci=hand[k],d=CARDS[ci];e.className='card r-'+ratt(ci);e.innerHTML='<b>'+d.c+'</b>'+artImg(ci)+'<span>'+d.n+'</span><small>'+d.t+'</small>'});const ni=dk[0],n=CARDS[ni];nx.className='card nx r-'+ratt(ni);nx.innerHTML='<span class="nt">Next</span>'+artImg(ni)+'<span class="nc">'+n.c+' ⚡</span>'}
 function cycle(k){dk.push(hand[k]);hand[k]=dk.shift();paint()}
 paint();
 
@@ -699,7 +779,7 @@ function updateProfile(){
  $('statW').textContent=WINS;$('statD').textContent=DRAWS;$('statL').textContent=LOSSES;
  $('gold').textContent=$('gold2').textContent='🪙 '+GOLD;
 }
-function rc2(){$('gold').textContent=$('gold2').textContent='🪙 '+GOLD;$('grid').innerHTML=CARDS.map((d,i)=>{const l=LV[i],f=1+.12*(l-1),c=80*l;return '<div class="cc"><b>'+d.c+'</b><i>'+d.e+'</i>'+d.n+'<small>Lv '+l+(d.fr?' · stun '+(4+(l-1)*.5)+'s':(d.hp?' · ❤ '+Math.round(d.hp*f):'')+' · ⚔ '+Math.round(d.dm*f))+'</small><button '+(l>=5?'disabled>MAX':GOLD<c?'disabled>⬆ '+c+' 🪙':'onclick="up('+i+')">⬆ '+c+' 🪙')+'</button></div>'}).join('')}
+function rc2(){$('gold').textContent=$('gold2').textContent='🪙 '+GOLD;$('grid').innerHTML=CARDS.map((d,i)=>{const l=LV[i],f=1+.12*(l-1),c=80*l,rl={common:'Common',rare:'Rare',epic:'Epic',legend:'Legendary'}[ratt(i)];return '<div class="cc r-'+ratt(i)+'"><b class="gem">'+d.c+'</b>'+artImg(i)+'<div class="cname">'+d.n+'</div><div class="rar">'+(d.sl?'Spell · ':'')+rl+'</div><small>Lv '+l+(d.fr?' · stun '+(4+(l-1)*.5)+'s':(d.hp?' · ❤ '+Math.round(d.hp*f):'')+' · ⚔ '+Math.round(d.dm*f))+'</small><button '+(l>=5?'disabled>MAX':GOLD<c?'disabled>⬆ '+c+' 🪙':'onclick="up('+i+')">⬆ '+c+' 🪙')+'</button></div>'}).join('')}
 function up(i){const c=80*LV[i];if(GOLD>=c&&LV[i]<5){GOLD-=c;LV[i]++;sv();rc2();snd(700,.2,'triangle',.06)}}
 function coll(x){$('coll').style.display=x?'flex':'none';rc2()}
 rc2();updateProfile();
